@@ -1,4 +1,3 @@
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -55,11 +54,21 @@ int main()
 
 	// ========== GRAPHICS PIPELINE ==========
 	// ---------- VERTEX DATA ----------
+	//float vertices[] = {
+	//	0.5f, 0.5f, 0.0f,		// Top right
+	//	0.5f, -0.5f, 0.0f,		// Bottom right
+	//	-0.5f, -0.5f, 0.0f,		// Bottom left
+	//	-0.5f, 0.5f, 0.0f		// Bottom Right
+	//};
+
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f,		// Top right
-		0.5f, -0.5f, 0.0f,		// Bottom right
-		-0.5f, -0.5f, 0.0f,		// Bottom left
-		-0.5f, 0.5f, 0.0f		// Bottom Right
+		-0.75f, -0.5f, 0.0f,
+		-0.5f, 0.5f, 0.0f,
+		-0.25f, -0.5f, 0.0f,
+
+		0.25f, -0.5f, 0.0f,
+		0.5f, 0.5f, 0.0f,
+		0.75f, -0.5f, 0.0f
 	};
 
 	unsigned int indices[] = {
@@ -151,7 +160,7 @@ int main()
 
 
 	// Wireframe :)
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// ========== RENDERING ==========
 	// Set up Render loop
@@ -166,7 +175,9 @@ int main()
 		// OpenGl will now use shaderProgram for any rendering
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// 3.) check and call events and swap the buffers
 		glfwSwapBuffers(window);
