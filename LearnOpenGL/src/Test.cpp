@@ -56,21 +56,16 @@ int main()
 	// ========== GRAPHICS PIPELINE ==========
 	// ---------- VERTEX DATA ----------
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		0.0f, 0.5f, 0.0f
+		0.5f, 0.5f, 0.0f,		// Top right
+		0.5f, -0.5f, 0.0f,		// Bottom right
+		-0.5f, -0.5f, 0.0f,		// Bottom left
+		-0.5f, 0.5f, 0.0f		// Bottom Right
 	};
 
-
-	// Vertex Buffer Object Generation
-	unsigned int VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO); 	// Bind the VBO to it's correct buffer type
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 	// copy the vertex data into GL_ARRAY_BUFFER
-	// GL_STREAM_DRAW: data is set once and used only a few times
-	// GL_STATIC_DRAW: data is set once and used many times
-	// GL_DYNAMIC_DRAW: data is often changed and used many times
-	// These determine where the GPU places the data in memory
+	unsigned int indices[] = {
+		0, 1, 3,	// First triangle
+		1, 2, 3		// Second triangle
+	};
 
 	// ---------- VERTEX SHADER ----------
 	// Vertex Shader Compilation
@@ -122,6 +117,25 @@ int main()
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
+	// Vertex Buffer Object Generation
+	unsigned int VBO, EBO, VAO;
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO); // This is supposed to come first!!!
+	// Bind Vertex Array Object first, then bind and set vertex buffers, then configure vertex attributes.
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); 	// Bind the VBO to it's correct buffer type
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 	// copy the vertex data into GL_ARRAY_BUFFER
+	// GL_STREAM_DRAW: data is set once and used only a few times
+	// GL_STATIC_DRAW: data is set once and used many times
+	// GL_DYNAMIC_DRAW: data is often changed and used many times
+	// These determine where the GPU places the data in memory
+
+	// Element Buffer Object Generation
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
 
 	// Tell OpenGL how to interpret the vertex data
 	//                  LOC SIZ  TYPE     NORMALIZE?  SPACE BETWEEN ATT  OFFSET
@@ -129,15 +143,15 @@ int main()
 	glEnableVertexAttribArray(0);
 
 	// ---------- VERTEX ARRAY OBJECTS ----------
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	//Unbind array buffer now that glVertexAttribPointer registered VBO  as the vertex attribute's bound vertex buffer object
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+	// Wireframe :)
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// ========== RENDERING ==========
 	// Set up Render loop
@@ -152,15 +166,18 @@ int main()
 		// OpenGl will now use shaderProgram for any rendering
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		// 3.) check and call events and swap the buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
-
 	// Post window close cleanup
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
+	glDeleteProgram(shaderProgram);
+	
 	glfwTerminate();
 	return 0;
 }
