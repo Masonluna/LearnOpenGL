@@ -1,27 +1,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include "Shader.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-const unsigned int SCR_WIDTH = 640;
-const unsigned int SCR_HEIGHT = 360;
-
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n\0";
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
 
 int main()
 {
@@ -51,109 +38,32 @@ int main()
 		std::cout << "Failed to initialize GLAD" << std::endl;
 	}
 	
-
-	// ========== GRAPHICS PIPELINE ==========
-	// ---------- VERTEX DATA ----------
-	//float vertices[] = {
-	//	0.5f, 0.5f, 0.0f,		// Top right
-	//	0.5f, -0.5f, 0.0f,		// Bottom right
-	//	-0.5f, -0.5f, 0.0f,		// Bottom left
-	//	-0.5f, 0.5f, 0.0f		// Bottom Right
-	//};
+	Shader ourShader("3.3.shader.vs", "3.3.shader.fs");
 
 	float vertices[] = {
-		-0.75f, -0.5f, 0.0f,
-		-0.5f, 0.5f, 0.0f,
-		-0.25f, -0.5f, 0.0f,
-
-		0.25f, -0.5f, 0.0f,
-		0.5f, 0.5f, 0.0f,
-		0.75f, -0.5f, 0.0f
+		0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f
 	};
-
-	unsigned int indices[] = {
-		0, 1, 3,	// First triangle
-		1, 2, 3		// Second triangle
-	};
-
-	// ---------- VERTEX SHADER ----------
-	// Vertex Shader Compilation
-	unsigned int vertexShader;
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	// Verify vertexShader compiled Correctly
-	int success;
-	char infoLog[512]; // Why 512? It's the size of the buffer
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// ---------- FRAGMENT SHADER ----------
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-	
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	}
-
-	// ---------- SHADER PROGRAM ----------
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-
-	// Attach Shaders
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	// Verify success
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-	}
-
-	// Delete shaders once they're linked to the shader program
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
 
 	// Vertex Buffer Object Generation
-	unsigned int VBO, EBO, VAO;
+	unsigned int VBO, VAO;
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO); // This is supposed to come first!!!
 	// Bind Vertex Array Object first, then bind and set vertex buffers, then configure vertex attributes.
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO); 	// Bind the VBO to it's correct buffer type
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 	// copy the vertex data into GL_ARRAY_BUFFER
-	// GL_STREAM_DRAW: data is set once and used only a few times
-	// GL_STATIC_DRAW: data is set once and used many times
-	// GL_DYNAMIC_DRAW: data is often changed and used many times
-	// These determine where the GPU places the data in memory
 
-	// Element Buffer Object Generation
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-
-	// Tell OpenGL how to interpret the vertex data
+	// Position attribute
 	//                  LOC SIZ  TYPE     NORMALIZE?  SPACE BETWEEN ATT  OFFSET
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	// ---------- VERTEX ARRAY OBJECTS ----------
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	// Color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	//Unbind array buffer now that glVertexAttribPointer registered VBO  as the vertex attribute's bound vertex buffer object
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -169,15 +79,12 @@ int main()
 		processInput(window);
 
 		// 2.) rendering commands
-		glClearColor(0.4f, 0.8f, 1.0f, 1.0f);
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// OpenGl will now use shaderProgram for any rendering
-		glUseProgram(shaderProgram);
+		ourShader.use();
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		// 3.) check and call events and swap the buffers
 		glfwSwapBuffers(window);
@@ -186,8 +93,6 @@ int main()
 	// Post window close cleanup
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
-	glDeleteProgram(shaderProgram);
 	
 	glfwTerminate();
 	return 0;
