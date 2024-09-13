@@ -1,17 +1,22 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "stb_image.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include "Shader.h"
 
 #include <iostream>
 
 
+glm::vec3 direction(0.11f, -0.09f, 0.0f);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+glm::vec3 updatePosition(glm::vec3& position);
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1024;
+const unsigned int SCR_HEIGHT = 768;
 
 int main()
 {
@@ -45,16 +50,20 @@ int main()
 
 	float vertices[] = {
 		// position				// color			// tex coord
-		0.5f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	1.0f, 1.0f,
-		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,	1.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,	0.0f, 0.0f,
-		-0.5f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,	0.0f, 1.0f
+		0.55f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	1.0f, 1.0f,
+		0.55f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,	1.0f, 0.0f,
+		-0.45f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,	0.0f, 0.0f,
+		-0.45f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,	0.0f, 1.0f
 	};
 
 	unsigned int indices[] = {
 		0, 1, 3,
 		1, 2, 3
 	};
+
+	// Position of the origin, speed, and direction of the movement
+	glm::vec3 position(0.05f, 0.0f, 0.0f);
+
 
 	// Vertex Buffer Object Generation
 	unsigned int VBO, VAO, EBO;
@@ -97,7 +106,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	// texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// load image, create texture, and generate mipmaps
@@ -140,7 +149,7 @@ int main()
 	
 	
 	ourShader.use();
-	glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
+	ourShader.setInt("texture1", 0);
 	ourShader.setInt("texture2", 1);
 	// Wireframe :)
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -160,12 +169,20 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
+
+
+		glm::mat4 transform = glm::mat4(1.0f);
+		position = updatePosition(position);
+		transform = glm::translate(transform, position);
+		// transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
 		// render the box
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
 		// 3.) check and call events and swap the buffers
 		ourShader.use();
+		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -188,4 +205,19 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
+}
+
+glm::vec3 updatePosition(glm::vec3& position)
+{
+	float speed = 0.001f;
+	position += speed * direction;
+
+	if (position.x > 0.45f || position.x < -0.55f) {
+		direction.x = -direction.x;
+	}
+	if (position.y > 0.5f || position.y < -0.5f) {
+		direction.y = -direction.y;
+	}
+
+	return position;
 }
