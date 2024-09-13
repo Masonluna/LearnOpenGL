@@ -44,13 +44,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)\vendor\Glad\include;$(ProjectDir)\vendor\GLFW\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\vendor\glm\glm-1.0.1;$(ProjectDir)\vendor\Glad\include;$(ProjectDir)\vendor\GLFW\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\vendor\GLFW\lib</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-int\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)\vendor\Glad\include;$(ProjectDir)\vendor\GLFW\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\vendor\glm\glm-1.0.1;$(ProjectDir)\vendor\Glad\include;$(ProjectDir)\vendor\GLFW\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\vendor\GLFW\lib</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-int\$(Configuration)\</IntDir>
