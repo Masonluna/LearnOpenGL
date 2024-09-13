@@ -50,10 +50,10 @@ int main()
 
 	float vertices[] = {
 		// position				// color			// tex coord
-		0.55f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,	1.0f, 1.0f,
-		0.55f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,	1.0f, 0.0f,
-		-0.45f, -0.5f, 0.0f,	0.0f, 0.0f, 1.0f,	0.0f, 0.0f,
-		-0.45f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,	0.0f, 1.0f
+		0.25f, 0.25f, 0.0f,		1.0f, 0.0f, 0.0f,	1.0f, 1.0f,
+		0.25f, -0.25f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 0.0f,
+		-0.25f, -0.25f, 0.0f,	0.0f, 0.0f, 1.0f,	0.0f, 0.0f,
+		-0.25f, 0.25f, 0.0f,	1.0f, 1.0f, 0.0f,	0.0f, 1.0f
 	};
 
 	unsigned int indices[] = {
@@ -62,7 +62,7 @@ int main()
 	};
 
 	// Position of the origin, speed, and direction of the movement
-	glm::vec3 position(0.05f, 0.0f, 0.0f);
+	glm::vec3 position(0.0f, 0.0f, 0.0f);
 
 
 	// Vertex Buffer Object Generation
@@ -209,13 +209,13 @@ void processInput(GLFWwindow* window)
 
 glm::vec3 updatePosition(glm::vec3& position)
 {
-	float speed = 0.001f;
+	float speed = 0.0012f;
 	position += speed * direction;
 
-	if (position.x > 0.45f || position.x < -0.55f) {
+	if (position.x > 1.0f - 0.25f || position.x < -1.0f + 0.25f) {
 		direction.x = -direction.x;
 	}
-	if (position.y > 0.5f || position.y < -0.5f) {
+	if (position.y > 1.0f - 0.25f || position.y < -1.0f + 0.25f) {
 		direction.y = -direction.y;
 	}
 
