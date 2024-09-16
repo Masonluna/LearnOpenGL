@@ -86,8 +86,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\IndexBuffer.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
     <ClCompile Include="src\Test.cpp" />
+    <ClCompile Include="src\VertexBuffer.cpp" />
     <ClCompile Include="vendor\Glad\src\glad.c">
       <DeploymentContent>true</DeploymentContent>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
@@ -95,8 +98,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\stb_image.h" />
+    <ClInclude Include="src\VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="3.3.shader.fs" />

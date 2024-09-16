@@ -9,27 +9,8 @@
 
 #include <iostream>
 
-#define ASSERT(x) if (!(x)) __debugbreak();
-#define GLCall(x) GLClearError();\
-	x;\
-	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-
-static void GLClearError()
-{
-	while (glGetError() != GL_NO_ERROR);
-}
-
-static bool GLLogCall(const char* function, const char* file, int line)
-{
-	while (GLenum error = glGetError())
-	{
-		std::cout << "[OpenGL Error] (" << error << "): " << function << " "
-			<< file << ":line " << line << std::endl;
-		return false;
-	}
-	return true;
-}
-
+#include "Renderer.h"
+#include "VertexBuffer.h"
 
 
 glm::vec3 direction(0.11f, -0.09f, 0.0f);
@@ -88,16 +69,16 @@ int main()
 
 
 	// Vertex Buffer Object Generation
-	unsigned int VBO, VAO, EBO;
+	unsigned int VAO, EBO;
+
+	VertexBuffer vb(vertices, sizeof(vertices));
+
 	GLCall(glGenVertexArrays(1, &VAO));
-	GLCall(glGenBuffers(1, &VBO));
 	GLCall(glGenBuffers(1, &EBO));
+
 
 	GLCall(glBindVertexArray(VAO)); // This is supposed to come first!!!
 	// Bind Vertex Array Object first, then bind and set vertex buffers, then configure vertex attributes.
-
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, VBO)); 	// Bind the VBO to it's correct buffer type
-	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW)); 	// copy the vertex data into GL_ARRAY_BUFFER
 
 	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO));
 	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
@@ -210,7 +191,7 @@ int main()
 	}
 	// Post window close cleanup
 	GLCall(glDeleteVertexArrays(1, &VAO));
-	GLCall(glDeleteBuffers(1, &VBO));
+	//GLCall(glDeleteBuffers(1, &VBO));
 	GLCall(glDeleteBuffers(1, &EBO));
 	
 	glfwTerminate();
