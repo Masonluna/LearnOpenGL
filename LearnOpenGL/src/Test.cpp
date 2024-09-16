@@ -9,6 +9,28 @@
 
 #include <iostream>
 
+#define ASSERT(x) if (!(x)) __debugbreak();
+#define GLCall(x) GLClearError();\
+	x;\
+	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+
+static void GLClearError()
+{
+	while (glGetError() != GL_NO_ERROR);
+}
+
+static bool GLLogCall(const char* function, const char* file, int line)
+{
+	while (GLenum error = glGetError())
+	{
+		std::cout << "[OpenGL Error] (" << error << "): " << function << " "
+			<< file << ":line " << line << std::endl;
+		return false;
+	}
+	return true;
+}
+
+
 
 glm::vec3 direction(0.11f, -0.09f, 0.0f);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -67,47 +89,47 @@ int main()
 
 	// Vertex Buffer Object Generation
 	unsigned int VBO, VAO, EBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	GLCall(glGenVertexArrays(1, &VAO));
+	GLCall(glGenBuffers(1, &VBO));
+	GLCall(glGenBuffers(1, &EBO));
 
-	glBindVertexArray(VAO); // This is supposed to come first!!!
+	GLCall(glBindVertexArray(VAO)); // This is supposed to come first!!!
 	// Bind Vertex Array Object first, then bind and set vertex buffers, then configure vertex attributes.
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO); 	// Bind the VBO to it's correct buffer type
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); 	// copy the vertex data into GL_ARRAY_BUFFER
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, VBO)); 	// Bind the VBO to it's correct buffer type
+	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW)); 	// copy the vertex data into GL_ARRAY_BUFFER
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO));
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
 	// Position attribute
 	//                  LOC SIZ  TYPE     NORMALIZE?  SPACE BETWEEN ATT  OFFSET
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0));
+	GLCall(glEnableVertexAttribArray(0));
 
 	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	GLCall(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float))));
+	GLCall(glEnableVertexAttribArray(1));
 
 	// Tex Coord Attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	GLCall(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float))));
+	GLCall(glEnableVertexAttribArray(2));
 
 	//Unbind array buffer now that glVertexAttribPointer registered VBO  as the vertex attribute's bound vertex buffer object
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
 	// load and create a texture
 	// Texture 1
 	// ---------
 	unsigned int texture1;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1); // Texture operations now apply to the object at texture
+	GLCall(glGenTextures(1, &texture1));
+	GLCall(glBindTexture(GL_TEXTURE_2D, texture1)); // Texture operations now apply to the object at texture
 
 	// texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
 	// texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
 	// load image, create texture, and generate mipmaps
 	int width, height, nrChannels;
@@ -115,8 +137,8 @@ int main()
 	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
 	if (data)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data));
+		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 	}
 	else
 	{
@@ -127,19 +149,19 @@ int main()
 	// Texture 2
 	// ---------
 	unsigned int texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
+	GLCall(glGenTextures(1, &texture2));
+	GLCall(glBindTexture(GL_TEXTURE_2D, texture2));
 	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	
 	data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
 	if (data)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
+		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 	}
 	else 
 	{
@@ -161,14 +183,14 @@ int main()
 		processInput(window);
 
 		// 2.) rendering commands
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+		GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
 		// bind texture
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+		GLCall(glActiveTexture(GL_TEXTURE0));
+		GLCall(glBindTexture(GL_TEXTURE_2D, texture1));
+		GLCall(glActiveTexture(GL_TEXTURE1));
+		GLCall(glBindTexture(GL_TEXTURE_2D, texture2));
 
 
 		glm::mat4 transform = glm::mat4(1.0f);
@@ -177,19 +199,19 @@ int main()
 		// transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		// render the box
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		GLCall(glBindVertexArray(VAO));
+		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
 		// 3.) check and call events and swap the buffers
 		ourShader.use();
 		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+		GLCall(glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform)));
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 	// Post window close cleanup
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
+	GLCall(glDeleteVertexArrays(1, &VAO));
+	GLCall(glDeleteBuffers(1, &VBO));
+	GLCall(glDeleteBuffers(1, &EBO));
 	
 	glfwTerminate();
 	return 0;
@@ -197,7 +219,7 @@ int main()
 
 void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
-	glViewport(0, 0, width, height);
+	GLCall(glViewport(0, 0, width, height));
 }
 
 void processInput(GLFWwindow* window)
