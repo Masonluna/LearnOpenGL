@@ -11,6 +11,7 @@
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 
 glm::vec3 direction(0.11f, -0.09f, 0.0f);
@@ -69,19 +70,15 @@ int main()
 
 
 	// Vertex Buffer Object Generation
-	unsigned int VAO, EBO;
+	unsigned int VAO;
 
-	VertexBuffer vb(vertices, sizeof(vertices));
 
 	GLCall(glGenVertexArrays(1, &VAO));
-	GLCall(glGenBuffers(1, &EBO));
-
-
 	GLCall(glBindVertexArray(VAO)); // This is supposed to come first!!!
 	// Bind Vertex Array Object first, then bind and set vertex buffers, then configure vertex attributes.
 
-	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO));
-	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
+	VertexBuffer vb(vertices, sizeof(vertices));
+	IndexBuffer ib(indices, 6);
 	// Position attribute
 	//                  LOC SIZ  TYPE     NORMALIZE?  SPACE BETWEEN ATT  OFFSET
 	GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0));
@@ -192,7 +189,7 @@ int main()
 	// Post window close cleanup
 	GLCall(glDeleteVertexArrays(1, &VAO));
 	//GLCall(glDeleteBuffers(1, &VBO));
-	GLCall(glDeleteBuffers(1, &EBO));
+	//GLCall(glDeleteBuffers(1, &EBO));
 	
 	glfwTerminate();
 	return 0;
