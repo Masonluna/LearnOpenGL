@@ -14,13 +14,18 @@
 #include "IndexBuffer.h"
 
 
-glm::vec3 direction(0.11f, -0.09f, 0.0f);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
-glm::vec3 updatePosition(glm::vec3& position);
-
 const unsigned int SCR_WIDTH = 1024;
 const unsigned int SCR_HEIGHT = 768;
+
+// ========== GLOBALS ===========
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+glm::vec3 camPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 camFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
 
 int main()
 {
@@ -53,6 +58,8 @@ int main()
 	Shader ourShader("3.3.shader.coordsys.vs", "3.3.shader.coordsys.fs");
 
 	GLCall(glEnable(GL_DEPTH_TEST));
+
+	// ========== DATA ==========
 
 	glm::vec3 cubePositions[] = {
 	glm::vec3(0.0f,  0.0f,  0.0f),
@@ -117,9 +124,14 @@ int main()
 		1, 2, 3
 	};
 
+
+
 	// Position of the origin, speed, and direction of the movement
 	glm::vec3 position(0.0f, 0.0f, 0.0f);
 
+
+
+	// ========== STATE ==========
 
 	// Vertex Buffer Object Generation
 	unsigned int VAO;
@@ -208,10 +220,15 @@ int main()
 	// ========== RENDERING ==========
 	// Set up Render loop
 	while (!glfwWindowShouldClose(window)) {
-		// 1.) input
+		// Time Logic
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		// input
 		processInput(window);
 
-		// 2.) rendering commands
+		// rendering commands
 		GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
@@ -227,7 +244,7 @@ int main()
 		float radius = 10.0f;
 		float camX = static_cast<float>(sin(glfwGetTime()) * radius);
 		float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
-		view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		view = glm::lookAt(camPos, camPos + camFront, camUp);
 
 		unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
 		unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
@@ -235,11 +252,6 @@ int main()
 
 		GLCall(glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view)));
 		GLCall(glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection)));
-
-		//glm::mat4 transform = glm::mat4(1.0f);
-		//position = updatePosition(position);
-		//transform = glm::translate(transform, position);
-		// transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		// render the box
 		GLCall(glBindVertexArray(VAO));
@@ -274,22 +286,23 @@ void framebuffer_size_callback(GLFWwindow * window, int width, int height)
 
 void processInput(GLFWwindow* window)
 {
+
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
+
+	float camSpeed = 2.5f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		camPos += camSpeed * camFront;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		camPos -= camSpeed * camFront;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		camPos -= glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		camPos += glm::normalize(glm::cross(camFront, camUp)) * camSpeed;
+	}
 }
 
-glm::vec3 updatePosition(glm::vec3& position)
-{
-	float speed = 0.0012f;
-	position += speed * direction;
-
-	if (position.x > 1.0f - 0.25f || position.x < -1.0f + 0.25f) {
-		direction.x = -direction.x;
-	}
-	if (position.y > 1.0f - 0.25f || position.y < -1.0f + 0.25f) {
-		direction.y = -direction.y;
-	}
-
-	return position;
-}
