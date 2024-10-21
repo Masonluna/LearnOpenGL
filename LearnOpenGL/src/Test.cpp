@@ -12,6 +12,7 @@
 #include "IndexBuffer.h"
 
 #include <iostream>
+#include "VertexArray.h"
 
 
 const unsigned int SCR_WIDTH = 1024;
@@ -140,29 +141,12 @@ int main()
 
 		// ========== STATE ==========
 
-		// Vertex Buffer Object Generation
-		unsigned int VAO;
-
-
-		GLCall(glGenVertexArrays(1, &VAO));
-		GLCall(glBindVertexArray(VAO)); // This is supposed to come first!!!
-		// Bind Vertex Array Object first, then bind and set vertex buffers, then configure vertex attributes.
-
+		VertexArray va;
 		VertexBuffer vb(vertices, sizeof(vertices));
-		//IndexBuffer ib(indices, 6);
-		// Position attribute
-		//							LOC SIZ  TYPE   NORMALIZE?  SPACE BETWEEN ATT  OFFSET
-		GLCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0));
-		GLCall(glEnableVertexAttribArray(0));
-
-		// Tex Coord Attribute
-		GLCall(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))));
-		GLCall(glEnableVertexAttribArray(1));
-
-		//Unbind array buffer now that glVertexAttribPointer registered VBO  as the vertex attribute's bound vertex buffer object
-		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-
+		VertexBufferLayout layout;
+		layout.Push<float>(3);
+		layout.Push<float>(2);
+		va.AddBuffer(vb, layout);
 		// TEXTURE
 		// =========
 		// Texture 1
@@ -220,8 +204,6 @@ int main()
 		ourShader.use();
 		ourShader.setInt("texture1", 0);
 		ourShader.setInt("texture2", 1);
-		// Wireframe :)
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 		// ========== RENDERING ==========
 		// Set up Render loop
@@ -253,7 +235,7 @@ int main()
 			ourShader.setMat4("view", view);
 
 			// render the box
-			GLCall(glBindVertexArray(VAO));
+			va.Bind();
 			for (unsigned int i = 0; i < 10; i++)
 			{
 				glm::mat4 model = glm::mat4(1.0f);
@@ -268,10 +250,6 @@ int main()
 			glfwSwapBuffers(window);
 			glfwPollEvents();
 		}
-		// Post window close cleanup
-		GLCall(glDeleteVertexArrays(1, &VAO));
-		//GLCall(glDeleteBuffers(1, &VBO));
-		//GLCall(glDeleteBuffers(1, &EBO));
 	}
 	glfwTerminate();
 	return 0;
