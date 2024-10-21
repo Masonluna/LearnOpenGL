@@ -56,6 +56,9 @@
     <ClInclude Include="src\VertexArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="3.3.shader.vs" />
